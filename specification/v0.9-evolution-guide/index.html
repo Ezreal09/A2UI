@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/A2UI_dark.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -1745,12 +1745,12 @@
 <tr>
 <td style="text-align: left;"><strong>Catalog</strong></td>
 <td style="text-align: left;">Separate component and function catalogs</td>
-<td style="text-align: left;">Unified Catalog (<code>standard_catalog.json</code>)</td>
+<td style="text-align: left;">Unified Catalog (<code>basic_catalog.json</code>)</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>Auxiliary Rules</strong></td>
 <td style="text-align: left;">N/A</td>
-<td style="text-align: left;"><code>standard_catalog_rules.txt</code></td>
+<td style="text-align: left;"><code>basic_catalog_rules.txt</code></td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>Validation</strong></td>
@@ -1769,15 +1769,15 @@
 <p><strong>v0.8.1:</strong></p>
 <ul>
 <li>Monolithic tendencies. <code>server_to_client.json</code> often contained deep definitions or relied on complex <code>oneOf</code> structures that were hard to decompose.</li>
-<li><code>standard_catalog_definition.json</code> existed but was often implicitly coupled.ß</li>
+<li><code>basic_catalog_definition.json</code> existed but was often implicitly coupled.</li>
 </ul>
 <p><strong>v0.9:</strong></p>
 <ul>
 <li><strong>Modularization</strong>: The schema is strictly split into:</li>
 <li><code>common_types.json</code>: Reusable primitives (IDs, paths) and logic/expression types.</li>
 <li><code>server_to_client.json</code>: The "envelope" defining the message types.</li>
-<li><code>standard_catalog.json</code>: The unified catalog of UI components and functions.</li>
-<li><strong>Swappable Catalogs</strong>: <code>server_to_client.json</code> now uses a relative reference to <code>catalog.json</code> as a placeholder. This allows developers to alias <code>catalog.json</code> to <code>standard_catalog.json</code> (or any custom catalog) during validation, enabling the use of custom component sets without modifying the core envelope schema.</li>
+<li><code>basic_catalog.json</code>: The unified catalog of UI components and functions.</li>
+<li><strong>Swappable Catalogs</strong>: <code>server_to_client.json</code> now uses a relative reference to <code>catalog.json</code> as a placeholder. This allows developers to alias <code>catalog.json</code> to <code>basic_catalog.json</code> (or any custom catalog) during validation, enabling the use of custom component sets without modifying the core envelope schema.</li>
 <li><strong>Unification</strong>: Components and functions are now part of the same catalog object, simplifying capability negotiation and inline definitions.</li>
 </ul>
 <h3 id="22-strict-message-typing">2.2. Strict Message Typing<a class="headerlink" href="#22-strict-message-typing" title="Permanent link">&para;</a></h3>
@@ -1794,7 +1794,7 @@
 <h3 id="23-auxiliary-rules-file">2.3. Auxiliary Rules File<a class="headerlink" href="#23-auxiliary-rules-file" title="Permanent link">&para;</a></h3>
 <p><strong>v0.9:</strong></p>
 <ul>
-<li><strong>New Artifact</strong>: <code>standard_catalog_rules.txt</code>.</li>
+<li><strong>New Artifact</strong>: <code>basic_catalog_rules.txt</code>.</li>
 <li><strong>Purpose</strong>: A plain-text prompt fragment containing rules for using the catalog schema (e.g., "MUST provide 'action' for Button").</li>
 <li><strong>Usage</strong>: Designed to be included in the system prompt alongside the catalog schema.</li>
 <li><strong>Reason</strong>: Some constraints (like conditional requirements or specific property combinations) are difficult or verbose to express in JSON Schema but easy to express in natural language rules for an LLM, and it can be packaged with the catalog schema for ease of customizing the prompt for a particular catalog.</li>
@@ -1832,7 +1832,7 @@
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v0.9&quot;</span><span class="p">,</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;createSurface&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">&quot;surfaceId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user_profile_card&quot;</span><span class="p">,</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">&quot;catalogId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://a2ui.org/specification/v0_9/standard_catalog.json&quot;</span><span class="p">,</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">&quot;catalogId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://a2ui.org/specification/v0_9/basic_catalog.json&quot;</span><span class="p">,</span>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="nt">&quot;theme&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">      </span><span class="nt">&quot;primaryColor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#007bff&quot;</span>
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="p">}</span>
