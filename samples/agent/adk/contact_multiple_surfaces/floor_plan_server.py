@@ -135,6 +135,7 @@ async def read_resource(uri: str) -> str | bytes:
         let pointY = 0;
         let startX = 0;
         let startY = 0;
+        let hostOrigin = '*';
 
         window.onload = () => { updateTransform(); };
 
@@ -224,7 +225,7 @@ async def read_resource(uri: str) -> str | bytes:
                                     source: 'modal'
                                 }
                             }
-                        }, '*');
+                        }, hostOrigin);
                     };
                 } else {
                     el.style.borderColor = 'rgba(0,0,0,0.1)';
@@ -246,8 +247,13 @@ async def read_resource(uri: str) -> str | bytes:
         }
 
         window.addEventListener('message', (event) => {
+            // Capture the trusted host origin from the first incoming message
+            if (hostOrigin === '*' && event.source === window.parent) {
+                hostOrigin = event.origin;
+            }
+            
             const data = event.data;
-            if (data.type === 'zoom') {
+            if (data && data.type === 'zoom') {
                 zoom(data.payload.factor);
             }
         });
@@ -264,7 +270,7 @@ async def read_resource(uri: str) -> str | bytes:
                 clientInfo: { name: "Floor Plan App", version: "1.0.0" },
                 protocolVersion: "2026-01-26"
             }
-        }, '*');
+        }, hostOrigin);
     </script>
 </body>
 </html>"""
