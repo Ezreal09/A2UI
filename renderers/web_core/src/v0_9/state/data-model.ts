@@ -69,6 +69,10 @@ export class DataModel {
   private readonly subscriptions: Map<string, Set<SubscriptionImpl<any>>> =
     new Map();
 
+  // Batch processing state
+  private _batchDepth = 0;
+  private _pendingPaths = new Set<string>();
+
   /**
    * Creates a new data model.
    *
@@ -148,8 +152,68 @@ export class DataModel {
       current[lastSegment] = value;
     }
 
-    this.notifySubscribers(path);
+    if (this._batchDepth > 0) {
+      this._pendingPaths.add(path);
+    } else {
+      this.notifySubscribers(path);
+    }
     return this;
+  }
+
+  /**
+   * Enters batch mode. Notifications will be deferred until endBatch() is called.
+   * Supports nested batch calls - only the outermost endBatch() triggers notifications.
+   */
+  beginBatch(): void {
+    this._batchDepth++;
+  }
+
+  /**
+   * Exits batch mode and triggers all pending notifications.
+   * Only triggers when the outermost batch ends (nested batch support).
+   */
+  endBatch(): void {
+    this._batchDepth--;
+    if (this._batchDepth > 0) {
+      return; // Still in a nested batch
+    }
+
+    // Collect all unique paths and their ancestors/descendants
+    const pathsToNotify = new Set<string>();
+
+    for (const path of this._pendingPaths) {
+      const normalizedPath = this.normalizePath(path);
+      pathsToNotify.add(normalizedPath);
+
+      // Add ancestors
+      let parentPath = normalizedPath;
+      while (parentPath !== "/" && parentPath !== "") {
+        parentPath = parentPath.substring(0, parentPath.lastIndexOf("/")) || "/";
+        pathsToNotify.add(parentPath);
+      }
+
+      // Add descendants from existing subscriptions
+      for (const subPath of this.subscriptions.keys()) {
+        if (this.isDescendant(subPath, normalizedPath)) {
+          pathsToNotify.add(subPath);
+        }
+      }
+    }
+
+    this._pendingPaths.clear();
+
+    // Notify all collected paths
+    for (const path of pathsToNotify) {
+      this.notify(path);
+    }
+  }
+
+  /**
+   * Clears all pending notifications without triggering them.
+   * Useful when an error occurs during batch processing.
+   */
+  clearPending(): void {
+    this._pendingPaths.clear();
   }
 
   /**
