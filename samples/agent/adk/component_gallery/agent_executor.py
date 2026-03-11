@@ -1,3 +1,17 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Agent executor for Component Gallery."""
 
 import logging
@@ -8,8 +22,7 @@ from a2a.server.tasks import TaskUpdater
 from a2a.types import (DataPart, Part, TaskState, TextPart)
 from a2a.utils import new_agent_parts_message, new_task
 from agent import ComponentGalleryAgent
-from a2ui.a2a import create_a2ui_part, try_activate_a2ui_extension
-from a2ui.core.parser import parse_response
+from a2ui.a2a import try_activate_a2ui_extension
 
 logger = logging.getLogger(__name__)
 
@@ -50,46 +63,7 @@ class ComponentGalleryExecutor(AgentExecutor):
     updater = TaskUpdater(event_queue, task.id, task.context_id)
 
     async for item in self.agent.stream(query, task.context_id):
-      final_parts = []
-
-      if "payload" in item:
-        payload = item["payload"]
-        text = payload.get("text")
-        if text:
-          final_parts.append(Part(root=TextPart(text=text)))
-
-        json_data = payload.get("json_data")
-        json_string = payload.get("json_string")
-
-        if json_string:
-          try:
-            json_data = json.loads(json_string)
-          except Exception as e:
-            logger.error(f"Failed to parse JSON string: {e}")
-
-        if json_data:
-          if isinstance(json_data, list):
-            for msg in json_data:
-              final_parts.append(create_a2ui_part(msg))
-          else:
-            final_parts.append(create_a2ui_part(json_data))
-      else:
-        content = item.get("content", "")
-        try:
-          text_part, json_data = parse_response(content)
-          if text_part.strip():
-            final_parts.append(Part(root=TextPart(text=text_part.strip())))
-
-          if json_data:
-            if isinstance(json_data, list):
-              for msg in json_data:
-                final_parts.append(create_a2ui_part(msg))
-            else:
-              final_parts.append(create_a2ui_part(json_data))
-        except (ValueError, json.JSONDecodeError) as e:
-          logger.error(f"Failed to parse response: {content}, {e}")
-          if content:
-            final_parts.append(Part(root=TextPart(text=content)))
+      final_parts = item["parts"]
 
       await updater.update_status(
           TaskState.completed,
