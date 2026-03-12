@@ -1,0 +1,248 @@
+/**
+ * Copyright 2026 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* ============================================================
+   Shell Layout
+   ============================================================ */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100svh;
+  padding: 24px 16px 48px;
+  position: relative;
+}
+
+/* ============================================================
+   Version Badge
+   ============================================================ */
+
+.version-badge {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  background: linear-gradient(135deg, #137fec, #6a6dcd);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* ============================================================
+   Theme Toggle
+   ============================================================ */
+
+.theme-toggle {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  background: light-dark(rgba(255,255,255,0.8), rgba(30,41,59,0.8));
+  backdrop-filter: blur(8px);
+  border: 1px solid light-dark(rgba(0,0,0,0.08), rgba(255,255,255,0.1));
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.05);
+}
+
+.theme-toggle .g-icon {
+  font-family: 'Material Symbols Outlined';
+  font-size: 20px;
+  color: light-dark(#303030, #e2e2e2);
+  font-variation-settings: 'FILL' 0, 'wght' 400;
+}
+
+.theme-toggle .g-icon.filled-heavy {
+  font-variation-settings: 'FILL' 1, 'wght' 500;
+}
+
+/* ============================================================
+   Search Form
+   ============================================================ */
+
+.search-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 640px;
+  margin-top: 80px;
+  gap: 24px;
+}
+
+.app-title {
+  font-size: clamp(24px, 5vw, 36px);
+  font-weight: 700;
+  text-align: center;
+  margin: 0;
+  color: light-dark(#1b1b1b, #f1f1f1);
+  letter-spacing: -0.5px;
+}
+
+.app-subtitle {
+  font-size: 14px;
+  color: light-dark(#5e5e5e, #919191);
+  text-align: center;
+  margin: -16px 0 0;
+  padding: 0 16px;
+}
+
+.input-row {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+}
+
+.input-row input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 15px;
+  font-family: inherit;
+  border: 1.5px solid light-dark(rgba(0,0,0,0.12), rgba(255,255,255,0.12));
+  border-radius: 12px;
+  background: light-dark(rgba(255,255,255,0.9), rgba(30,41,59,0.7));
+  color: light-dark(#1b1b1b, #f1f1f1);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-row input:focus {
+  border-color: #137fec;
+  box-shadow: 0 0 0 3px rgba(19, 127, 236, 0.15);
+}
+
+.input-row button {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 12px;
+  background: #137fec;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-row button:hover:not(:disabled) {
+  background: #0f6bcc;
+}
+
+.input-row button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.input-row button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.input-row button .g-icon {
+  font-family: 'Material Symbols Outlined';
+  font-size: 20px;
+  font-variation-settings: 'FILL' 1, 'wght' 500;
+}
+
+/* ============================================================
+   Loading
+   ============================================================ */
+
+.pending {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 80px;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.1));
+  border-top-color: #137fec;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 14px;
+  color: light-dark(#5e5e5e, #919191);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   Error
+   ============================================================ */
+
+.error {
+  margin-top: 24px;
+  padding: 12px 16px;
+  background: light-dark(#fff0f0, #2d0001);
+  border: 1px solid light-dark(#ffb4ab, #93000a);
+  border-radius: 10px;
+  color: light-dark(#93000a, #ffb4ab);
+  font-size: 14px;
+  max-width: 640px;
+  width: 100%;
+  text-align: center;
+}
+
+/* ============================================================
+   Surfaces
+   ============================================================ */
+
+.surfaces {
+  width: 100%;
+  max-width: 900px;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* A2UI v0.9 surface wrapper */
+.a2ui-surface {
+  width: 100%;
+  animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

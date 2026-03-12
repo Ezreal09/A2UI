@@ -43,11 +43,13 @@ export class SurfaceModel<T extends ComponentApi> {
    * @param id The unique identifier for this surface.
    * @param catalog The component catalog used by this surface.
    * @param theme The theme to apply to this surface.
+   * @param sendDataModel If true, every dispatched action should include the full data model snapshot.
    */
   constructor(
     readonly id: string,
     readonly catalog: Catalog<T>,
     readonly theme: any = {},
+    readonly sendDataModel: boolean = false,
   ) {
     this.dataModel = new DataModel({});
     this.componentsModel = new SurfaceComponentsModel();

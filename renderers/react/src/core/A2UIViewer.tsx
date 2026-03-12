@@ -22,6 +22,10 @@ import {A2UIProvider, useA2UIActions} from './A2UIProvider';
 import {A2UIRenderer} from './A2UIRenderer';
 import {litTheme} from '../theme/litTheme';
 import type {OnActionCallback} from '../types';
+import {A2UIProviderV9, useA2UIActionsV9} from '../v0_9/core/A2UIProviderV9';
+import {A2UIRendererV9} from '../v0_9/core/A2UIRendererV9';
+import {ReactCatalog} from '../v0_9/registry/ReactCatalog';
+import type {A2uiMessage} from '@a2ui/web_core/v0_9';
 
 /**
  * Component instance format for static A2UI definitions.
@@ -54,6 +58,18 @@ export interface A2UIViewerProps {
   theme?: Types.Theme;
   /** Additional CSS class */
   className?: string;
+  /**
+   * Protocol version to use.
+   * - 'v0.8' (default): Uses the v0.8 message format (beginRendering/surfaceUpdate).
+   * - 'v0.9': Uses the v0.9 message format (createSurface/updateComponents).
+   *   Requires providing a `catalog` prop.
+   */
+  version?: 'v0.8' | 'v0.9';
+  /**
+   * The ReactCatalog to use when version='v0.9'.
+   * If not provided, a default empty catalog named 'default' will be used.
+   */
+  catalog?: ReactCatalog;
 }
 
 /**
@@ -85,8 +101,47 @@ export function A2UIViewer({
   onAction,
   theme = litTheme,
   className,
+  version = 'v0.8',
+  catalog,
 }: A2UIViewerProps) {
-  // Generate a stable surface ID based on the definition
+  // v0.9 branch - delegates to A2UIViewerV9 which handles its own hooks
+  if (version === 'v0.9') {
+    return (
+      <A2UIViewerV9
+        root={root}
+        components={components}
+        data={data}
+        onAction={onAction}
+        className={className}
+        catalog={catalog}
+      />
+    );
+  }
+
+  // v0.8 branch - delegates to A2UIViewerV8 which handles its own hooks
+  return (
+    <A2UIViewerV8
+      root={root}
+      components={components}
+      data={data}
+      onAction={onAction}
+      theme={theme}
+      className={className}
+    />
+  );
+}
+
+/**
+ * Internal v0.8 viewer implementation.
+ */
+function A2UIViewerV8({
+  root,
+  components,
+  data = {},
+  onAction,
+  theme = litTheme,
+  className,
+}: Omit<A2UIViewerProps, 'version' | 'catalog'>) {
   const baseId = useId();
   const surfaceId = useMemo(() => {
     const definitionKey = `${root}-${JSON.stringify(components)}`;
@@ -175,6 +230,128 @@ function A2UIViewerInner({
       <A2UIRenderer surfaceId={surfaceId} />
     </div>
   );
+}
+
+/**
+ * Internal v0.9 viewer implementation.
+ */
+function A2UIViewerV9({
+  root,
+  components,
+  data = {},
+  onAction,
+  className,
+  catalog,
+}: Omit<A2UIViewerProps, 'version' | 'theme'>) {
+  const baseId = useId();
+  const surfaceId = useMemo(() => `surface-v9-${baseId.replace(/:/g, '-')}`, [baseId]);
+  const effectiveCatalog = useMemo(
+    () => catalog ?? new ReactCatalog('default'),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [catalog?.id ?? 'default']
+  );
+
+  return (
+    <A2UIProviderV9 catalogs={[effectiveCatalog]} onAction={onAction}>
+      <A2UIViewerV9Inner
+        surfaceId={surfaceId}
+        catalogId={effectiveCatalog.id}
+        root={root}
+        components={components}
+        data={data}
+        className={className}
+      />
+    </A2UIProviderV9>
+  );
+}
+
+/**
+ * Inner component that sends v0.9 messages within the provider context.
+ */
+function A2UIViewerV9Inner({
+  surfaceId,
+  catalogId,
+  root: _root,
+  components,
+  data,
+  className,
+}: {
+  surfaceId: string;
+  catalogId: string;
+  root: string;
+  components: ComponentInstance[];
+  data: Record<string, unknown>;
+  className?: string;
+}) {
+  const {processMessages} = useA2UIActionsV9();
+  const lastProcessedRef = useRef<string>('');
+
+  useEffect(() => {
+    const key = `${surfaceId}-${JSON.stringify(components)}-${JSON.stringify(data)}`;
+    if (key === lastProcessedRef.current) return;
+    lastProcessedRef.current = key;
+
+    const messages: A2uiMessage[] = [
+      {
+        version: 'v0.9',
+        createSurface: {surfaceId, catalogId},
+      },
+      {
+        version: 'v0.9',
+        updateComponents: {
+          surfaceId,
+          components: components.map(({id, component}) => ({
+            id,
+            ...flattenComponent(component),
+          })) as {component: string; id?: string; [key: string]: unknown}[],
+        },
+      },
+    ];
+
+    // Add data model update if data is non-empty
+    if (data && Object.keys(data).length > 0) {
+      messages.push({
+        version: 'v0.9',
+        updateDataModel: {surfaceId, path: '/', value: data},
+      });
+    }
+
+    processMessages(messages);
+  }, [processMessages, surfaceId, catalogId, components, data]);
+
+  return (
+    <div className={className}>
+      <A2UIRendererV9 surfaceId={surfaceId} />
+    </div>
+  );
+}
+
+/**
+ * Flattens a component definition from A2UIViewer's { TypeName: props } format
+ * into v0.9's { component: 'TypeName', ...props } format.
+ *
+ * Input:  { Card: { child: 'text' } }
+ * Output: { component: 'Card', child: 'text' }
+ *
+ * If already flat (no single-key object wrapping), returns as-is with no component field added.
+ */
+function flattenComponent(componentDef: Record<string, unknown>): Record<string, unknown> {
+  const keys = Object.keys(componentDef);
+  // v0.8-style: single key whose value is an object → unwrap
+  const firstKey = keys[0];
+  if (
+    keys.length === 1 &&
+    firstKey !== undefined &&
+    typeof componentDef[firstKey] === 'object' &&
+    componentDef[firstKey] !== null &&
+    !Array.isArray(componentDef[firstKey])
+  ) {
+    const typeName = firstKey;
+    const props = componentDef[typeName] as Record<string, unknown>;
+    return {component: typeName, ...props};
+  }
+  // Already flat format (contains 'component' key) or unknown → return as-is
+  return componentDef;
 }
 
 /**

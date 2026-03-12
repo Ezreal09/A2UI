@@ -1,6 +1,6 @@
 {
   "name": "@a2ui/react",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "React renderer for A2UI (Agent-to-User Interface)",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -49,8 +49,10 @@
   },
   "dependencies": {
     "@a2ui/web_core": "^0.8.0",
+    "@preact/signals-core": "^1.14.0",
     "clsx": "^2.1.0",
-    "markdown-it": "^14.0.0"
+    "markdown-it": "^14.0.0",
+    "zod": "^3.25.76"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
